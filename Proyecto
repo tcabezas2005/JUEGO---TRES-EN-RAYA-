@@ -1,0 +1,86 @@
+from PIL import Image
+import matplotlib.pyplot as plt
+
+TAMANO_CELDA = 100
+
+def dibujar_tablero(tablero, jugador_x, jugador_o, jugador_actual):
+    fig, ax = plt.subplots()
+    ax.set_axis_off()
+
+    for fila in range(3):
+        for columna in range(3):
+            jugador = tablero[fila][columna]
+            if jugador == "X":
+                imagen_x = plt.imread("x_image.png")
+                ax.imshow(imagen_x, extent=[columna * TAMANO_CELDA, (columna + 1) * TAMANO_CELDA,
+                                            fila * TAMANO_CELDA, (fila + 1) * TAMANO_CELDA])
+            elif jugador == "O":
+                imagen_o = plt.imread("o_image.png")
+                ax.imshow(imagen_o, extent=[columna * TAMANO_CELDA, (columna + 1) * TAMANO_CELDA,
+                                            fila * TAMANO_CELDA, (fila + 1) * TAMANO_CELDA])
+
+    ax.set_xlim([0, 3 * TAMANO_CELDA])
+    ax.set_ylim([0, 3 * TAMANO_CELDA])
+
+    # Líneas verticales y horizontales para crear un tablero
+    for i in range(1, 3):
+        plt.axvline(i * TAMANO_CELDA, color='black', linewidth=2)
+        plt.axhline(i * TAMANO_CELDA, color='black', linewidth=2)
+
+    plt.title(f"Turno de {jugador_x if jugador_actual == 'X' else jugador_o}")
+    plt.show()
+
+def mostrar_imagen_ganador(jugador_x, jugador_o, ganador):
+    if ganador == "X":
+        imagen_ganador = Image.open("ganador_x_image.png")
+    elif ganador == "O":
+        imagen_ganador = Image.open("ganador_o_image.png")
+    else:
+        return  # No hay ganador, no se muestra ninguna imagen
+
+    plt.imshow(imagen_ganador)
+    plt.title(f"{jugador_x if ganador == 'X' else jugador_o} ha ganado")
+    plt.axis("off")
+    plt.show()
+
+def verificar_ganador(tablero, jugador):
+    for fila in tablero:
+        if all(x == jugador for x in fila):
+            return True
+
+    for columna in range(3):
+        if all(tablero[fila][columna] == jugador for fila in range(3)):
+            return True
+
+    if all(tablero[i][i] == jugador for i in range(3)) or all(tablero[i][2 - i] == jugador for i in range(3)):
+        return True
+
+    return False
+
+def juego_tres_en_raya():
+    tablero = [[" " for _ in range(3)] for _ in range(3)]
+
+    jugador_x = input("Ingrese el nombre del Jugador X: ")
+    jugador_o = input("Ingrese el nombre del Jugador O: ")
+
+    jugador_actual = "X"
+
+    while True:
+        dibujar_tablero(tablero, jugador_x, jugador_o, jugador_actual)
+
+        fila = int(input(f"{jugador_actual} ({jugador_x if jugador_actual == 'X' else jugador_o}), elige la fila (0, 1, 2): "))
+        columna = int(input(f"{jugador_actual} ({jugador_x if jugador_actual == 'X' else jugador_o}), elige la columna (0, 1, 2): "))
+
+        if tablero[fila][columna] == " ":
+            tablero[fila][columna] = jugador_actual
+
+            if verificar_ganador(tablero, jugador_actual):
+                mostrar_imagen_ganador(jugador_x, jugador_o, jugador_actual)
+                break
+
+            jugador_actual = "O" if jugador_actual == "X" else "X"
+        else:
+            print("La casilla está ocupada. Elige otra casilla.")
+
+if __name__ == "__main__":
+    juego_tres_en_raya()
